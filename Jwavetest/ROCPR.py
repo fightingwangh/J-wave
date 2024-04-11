@@ -12,29 +12,29 @@ import numpy as np
 data_dir = 'data/'
 output_file = 'training_metrics.txt'
 
-# 定义训练集、验证集、测试集目录
+
 train_dir = os.path.join(data_dir, 'train_data')
 val_dir = os.path.join(data_dir, 'val_data')
 test_dir = os.path.join(data_dir, 'test_data')
 
-# 定义预处理和数据增强
+
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-# 加载数据集
+
 train_dataset = ImageFolder(train_dir, transform=transform)
 val_dataset = ImageFolder(val_dir, transform=transform)
 test_dataset = ImageFolder(test_dir, transform=transform)
 
-# 定义数据加载器
+
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=32)
 test_loader = DataLoader(test_dataset, batch_size=32)
 
-# 检查是否有GPU可用
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
@@ -45,7 +45,7 @@ model = models.vgg16(pretrained=True)
 
 classifier = list(model.classifier.children())[:-3]
 
-# 添加包含512个神经元的卷积层和全连接层
+
 num_features = model.classifier[0].in_features
 classifier.extend([
     nn.Conv2d(in_channels=num_features, out_channels=512, kernel_size=1),
@@ -127,7 +127,7 @@ for epoch in range(20):
     val_loss_list.append(val_loss)
     val_accuracy_list.append(val_accuracy)
 
-# 绘制训练和验证指标
+
 epochs = range(1, 21)
 plt.figure(figsize=(10, 5))
 plt.subplot(1, 2, 1)
@@ -166,7 +166,7 @@ with torch.no_grad():
 
 test_accuracy = 100 * correct / total
 print(f'Test Accuracy: {test_accuracy:.2f}%')
-# 计算混淆矩阵和分类报告
+
 conf_matrix = confusion_matrix(all_labels, all_preds)
 class_report = classification_report(all_labels, all_preds, target_names=train_dataset.classes)
 
