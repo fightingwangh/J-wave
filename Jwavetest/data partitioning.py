@@ -22,7 +22,6 @@ for type_folder in os.listdir(data_dir):
         val_set = files[train_samples:train_samples+val_samples]
         test_set = files[train_samples+val_samples:]
 
-        # 创建存放划分后数据的文件夹
         os.makedirs(f'train_data/{type_folder}', exist_ok=True)
         os.makedirs(f'val_data/{type_folder}', exist_ok=True)
         os.makedirs(f'test_data/{type_folder}', exist_ok=True)
