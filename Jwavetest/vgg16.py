@@ -5,12 +5,12 @@ from torchvision import models, transforms
 from torchvision.datasets import ImageFolder
 import os
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc, precision_recall_curve
 import numpy as np
 
 
 data_dir = 'data/'
-
+output_file = 'training_metrics.txt'
 
 
 train_dir = os.path.join(data_dir, 'train_data')
@@ -38,7 +38,6 @@ test_loader = DataLoader(test_dataset, batch_size=32)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-model = models.vgg16(pretrained=True).to(device)
 
 
 model = models.vgg16(pretrained=True)
@@ -49,11 +48,11 @@ classifier = list(model.classifier.children())[:-3]
 
 num_features = model.classifier[0].in_features
 classifier.extend([
-    nn.Conv2d(in_channels=num_features, out_channels=512, kernel_size=3),
+    nn.Conv2d(in_channels=num_features, out_channels=512, kernel_size=1),
     nn.ReLU(inplace=True),
     nn.AdaptiveAvgPool2d((1, 1)),
     nn.Flatten(),
-    nn.Linear(512, 512),
+    nn.Linear(512, 512),  # 全连接层
     nn.ReLU(inplace=True),
     nn.Linear(512, len(train_dataset.classes)),
     nn.Softmax(dim=1)
@@ -66,12 +65,6 @@ new_classifier = nn.Sequential(*classifier)
 model.classifier = new_classifier
 model = models.vgg16(pretrained=True).to(device)
 
-
-for i, param in enumerate(model.features.parameters()):
-    if i < 14:
-        param.requires_grad = False
-
-
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
@@ -81,7 +74,7 @@ train_accuracy_list = []
 val_loss_list = []
 val_accuracy_list = []
 
-
+# 训练模型
 for epoch in range(20):
     model.train()
     total_loss = 0.0
@@ -127,15 +120,13 @@ for epoch in range(20):
 
     val_loss = total_loss / len(val_loader)
     val_accuracy = 100 * correct / total
-    print(f'Epoch [{epoch + 1}/{5}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.2f}%')
+    print(f'Epoch [{epoch + 1}/{20}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.2f}%')
 
     train_loss_list.append(train_loss)
     train_accuracy_list.append(train_accuracy)
     val_loss_list.append(val_loss)
     val_accuracy_list.append(val_accuracy)
 
-
-import matplotlib.pyplot as plt
 
 epochs = range(1, 21)
 plt.figure(figsize=(10, 5))
@@ -150,13 +141,12 @@ plt.subplot(1, 2, 2)
 plt.plot(epochs, train_accuracy_list, label='trainacc', marker='o')
 plt.plot(epochs, val_accuracy_list, label='valacc', marker='o')
 plt.xlabel('Epochs')
-plt.ylabel('acc(%)')
+plt.ylabel('acc (%)')
 plt.legend()
 
 plt.tight_layout()
 plt.show()
 
-# 测试
 model.eval()
 correct = 0
 total = 0
@@ -177,19 +167,45 @@ with torch.no_grad():
 test_accuracy = 100 * correct / total
 print(f'Test Accuracy: {test_accuracy:.2f}%')
 
-
 conf_matrix = confusion_matrix(all_labels, all_preds)
 class_report = classification_report(all_labels, all_preds, target_names=train_dataset.classes)
 
 
-with open('training_metrics.txt', 'w') as f:
-    for epoch in range(20):
-        f.write(f'Epoch [{epoch + 1}]:\n')
-        f.write(f'Train Loss: {train_loss_list[epoch]:.4f}, Train Accuracy: {train_accuracy_list[epoch]:.2f}%\n')
-        f.write(f'Validation Loss: {val_loss_list[epoch]:.4f}, Validation Accuracy: {val_accuracy_list[epoch]:.2f}%\n\n')
+model.eval()
+val_outputs = []
+val_labels = []
 
-with open('confusion_matrix.txt', 'w') as f:
-    f.write("Confusion Matrix:\n")
-    f.write(str(conf_matrix))
-    f.write("\n\nClassification Report:\n")
-    f.write(class_report)
+with torch.no_grad():
+    for i, (images, labels) in enumerate(val_loader):
+        images, labels = images.to(device), labels.to(device)
+        outputs = model(images)
+        val_outputs.extend(outputs.cpu().numpy())
+        val_labels.extend(labels.cpu().numpy())
+
+
+predicted_classes = np.argmax(np.array(val_outputs), axis=1)
+
+class_1_probabilities = np.array(val_outputs)[:, 1]
+
+
+fpr_0, tpr_0, _ = roc_curve(np.array(val_labels) == 0, 1 - class_1_probabilities)
+roc_auc_0 = auc(fpr_0, tpr_0)
+
+fpr_1, tpr_1, _ = roc_curve(np.array(val_labels) == 1, class_1_probabilities)
+roc_auc_1 = auc(fpr_1, tpr_1)
+
+
+plt.figure()
+plt.plot(fpr_0, tpr_0, color='darkorange', lw=3, linestyle='-', label='J wave (area = %0.4f)' % roc_auc_0)
+plt.plot(fpr_1, tpr_1, color='blue', lw=2, linestyle='--', label='other (area = %0.4f)' % roc_auc_1)
+
+plt.plot([0, 1], [0, 1], color='black', lw=2, linestyle='--')
+
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+# plt.title('Receiver Operating Characteristic')
+plt.legend(loc="lower right")
+plt.savefig('ROC.png', dpi=600)
+
+
+
