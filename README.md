@@ -1,7 +1,6 @@
 |Research Title|Research Purpose|
 |---|---|
-|Research on J Wave Detection Based on Transfer Learning and VGG16|
-This study proposes a J wave detection method based on transfer learning with a pre-trained VGG16 model. The goal is to achieve outstanding detection results on a limited J wave dataset through transfer learning.
+|Research on J Wave Detection Based on Transfer Learning and VGG16|This study proposes a J wave detection method based on transfer learning with a pre-trained VGG16 model. The goal is to achieve outstanding detection results on a limited J wave dataset through transfer learning.|
 
 ### cwt.py
 The main function of cwt.py is to utilize continuous wavelet transformation to convert one-dimensional electrocardiogram signals into two-dimensional grayscale images.
