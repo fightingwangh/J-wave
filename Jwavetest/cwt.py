@@ -5,7 +5,7 @@ import numpy as np
 import pywt
 
 # 指定的CSV文件名
-csv_filename = 'data0.csv'    #0: J wave   1:non_J_wave
+csv_filename = 'data/data0.csv'    #0: J wave   1:non_J_wave
 
 # 读取指定的CSV文件
 with open(csv_filename, 'r', newline='\n') as f:
@@ -28,7 +28,7 @@ with open(csv_filename, 'r', newline='\n') as f:
         scaled_coefficients = scaled_coefficients.astype(np.uint8)
 
 
-        output_folder = 'J/'
+        output_folder = 'data/0'   #
 
         output_path = f'{output_folder}J_{idx + 1}.png'
         cv2.imwrite(output_path, scaled_coefficients)
