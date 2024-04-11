@@ -70,7 +70,7 @@ for fold, (train_index, test_index) in enumerate(kf.split(range(10))):
     print(f"\n第 {fold + 1} 折:")
 
 
-    data_folder = "10Jdata/"
+    data_folder = "data/10jwavedata/"
     train_folder = os.path.join(data_folder, f"Fold_{fold + 1}/train_data")
     test_folder = os.path.join(data_folder, f"Fold_{fold + 1}/test_data")
 
