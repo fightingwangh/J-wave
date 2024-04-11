@@ -3,7 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 import shutil
 
 
-data_dir = '10data/'
+data_dir = 'data/'
 
 
 classes = [class_name for class_name in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, class_name))]
