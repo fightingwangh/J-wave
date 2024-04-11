@@ -1,4 +1,5 @@
 |Research Title|
+|---|
 |Research on J Wave Detection Based on Transfer Learning and VGG16|
 This study proposes a J wave detection method based on transfer learning with a pre-trained VGG16 model. 
 The goal is to achieve outstanding detection results on a limited J wave dataset through transfer learning.
