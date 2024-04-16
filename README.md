@@ -2,7 +2,7 @@
 |---|---|
 |Research on J Wave Detection Based on Transfer Learning and VGG16|This study proposes a J wave detection method based on transfer learning with a pre-trained VGG16 model. The goal is to achieve outstanding detection results on a limited J wave dataset through transfer learning.|
 
-## J wave simulation
+# J wave simulation
 The "J wave simulation" folder mainly contains programs for simulating J waves. We used the e0107 dataset as an example to demonstrate the simulation process of J waves.
 
 ### e0107.mat e0107_.mat
@@ -17,7 +17,7 @@ The j_wave.m file is used to generate J waves that meet specific requirements. T
 ### main.m
 Running main.m will generate the simulated J wave signals.
 
-## Jwavetest
+# Jwavetest
 The folder "Jwavetest" mainly categorizes simulated J-wave signals and non-J-wave signals.
 
 ### cwt.py
